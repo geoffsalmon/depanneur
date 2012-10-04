@@ -10,23 +10,26 @@
 (defn- mod-cell
   "Alters the current data cell in a state by a function"
   [s f]
-  ;;(println (str "cel[" (:ptr s) "] = " (f (get s (:ptr s) 0))))
   (assoc s (:ptr s) (f (get s (:ptr s) 0))))
 
 ;; dispatch table for the individual commands
 (def ^{:private true} cmds
   {\> (fn [s] (mod-ptr s inc))
+   ;; TODO: handle pointer underflow?
    \< (fn [s] (mod-ptr s dec))
+
+   ;; TODO: handle data cell underflow/overflow?
    \+ (fn [s] (mod-cell s inc))
    \- (fn [s] (mod-cell s dec))
+
    \. (fn [s]
         (.write *out* (int (get s (:ptr s) 0)))
         s)
    \, (fn [s]
         (let [c (.read *in*)]
           (if (neg? c)
-            ;; EOF, so leave the cell unchanged? This behaviour should
-            ;; be configurable.
+            ;; EOF, so leave the cell unchanged? TODO: This behaviour
+            ;; should be configurable?
             s
             (mod-cell s (fn [_] c)))))
    ;; the [ and ] cmds are never seen by the interpreter, but they are
