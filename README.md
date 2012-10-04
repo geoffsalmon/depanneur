@@ -1,13 +1,13 @@
 # depanneur
 
-A Clojure library designed to ... well, that part is up to you.
+A Brainfuck interpreter in clojure.
 
 ## Usage
 
-FIXME
+You probably don't want to use this.
 
 ## License
 
-Copyright © 2012 FIXME
+Copyright © 2012 Geoffrey Salmon
 
 Distributed under the Eclipse Public License, the same as Clojure.
