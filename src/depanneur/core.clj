@@ -1,5 +1,4 @@
 (ns depanneur.core
-  (:use [clojure.java.io :only [input-stream]])
   (:import [java.io StringReader StringWriter]))
 
 (defn- mod-ptr
