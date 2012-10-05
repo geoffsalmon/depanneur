@@ -41,25 +41,29 @@
   containing the characters ><+-., or sub vectors containing those
   characters. The sub vectors represent blocks of brainfuck commands
   between that are between []. They can be nested arbitrarily deep."
-  [s]
+  [s depth]
   (loop [s s
          block []]
     (if (seq s)
       (case (first s)
         ;; recurse to parse the sub block
         \[
-        (let [[rest-s sub-b] (parse-block (rest s))]
+        (let [[rest-s sub-b] (parse-block (rest s) (inc depth))]
           (recur rest-s (conj block sub-b)))
         ;; return the parsed block
         \]
-        [(rest s) block]
+        (if (> depth 0)
+          [(rest s) block]
+          (throw (IllegalArgumentException. "Unmatched ]")))
         ;; add the cmd to the block and continue
         (recur (rest s) (conj block (first s))))
-      [nil block])))
+      (if (zero? depth)
+        [nil block]
+        (throw (IllegalArgumentException. "Unmatched ["))))))
 
 (defn parse-chars [s]
   (let [[rs blocks]
-        (parse-block (filter #(contains? cmds %) s))]
+        (parse-block (filter #(contains? cmds %) s) 0)]
     ;; ensure entire string was parsed
     (when-not (seq rs)
       blocks)))
@@ -131,3 +135,16 @@
     <.[-]                    Output ROT13ed character from copy and clear it
     <-,+                     Read next character
 ]                            End character reading loop")
+
+;; (use 'criterium.core)
+;; depanneur.core> (bench (interpret (parse-chars rot13) "foobaasdfasdfr" nil))
+;; Evaluation count : 1620 in 60 samples of 27 calls.
+;;              Execution time mean : 38.808896 ms
+;;     Execution time std-deviation : 403.324636 us
+;;    Execution time lower quantile : 38.477741 ms ( 2.5%)
+;;    Execution time upper quantile : 39.174752 ms (97.5%)
+;;
+;; Found 2 outliers in 60 samples (3.3333 %)
+;; 	low-severe	 1 (1.6667 %)
+;; 	low-mild	 1 (1.6667 %)
+;;  Variance from outliers : 1.6389 % Variance is slightly inflated by outliers
