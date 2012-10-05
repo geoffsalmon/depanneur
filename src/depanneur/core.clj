@@ -31,42 +31,7 @@
             ;; should be configurable?
             s
             (mod-cell s (fn [_] c)))))
-   ;; the [ and ] cmds are never seen by the interpreter, but they are
-   ;; in this map so that the parser doesn't filter them out.
-   \[ nil
-   \] nil})
-
-(defn parse-block
-  "Parses a given sequence of characters and returns a vector
-  containing the characters ><+-., or sub vectors containing those
-  characters. The sub vectors represent blocks of brainfuck commands
-  between that are between []. They can be nested arbitrarily deep."
-  [s depth]
-  (loop [s s
-         block []]
-    (if (seq s)
-      (case (first s)
-        ;; recurse to parse the sub block
-        \[
-        (let [[rest-s sub-b] (parse-block (rest s) (inc depth))]
-          (recur rest-s (conj block sub-b)))
-        ;; return the parsed block
-        \]
-        (if (> depth 0)
-          [(rest s) block]
-          (throw (IllegalArgumentException. "Unmatched ]")))
-        ;; add the cmd to the block and continue
-        (recur (rest s) (conj block (first s))))
-      (if (zero? depth)
-        [nil block]
-        (throw (IllegalArgumentException. "Unmatched ["))))))
-
-(defn parse-chars [s]
-  (let [[rs blocks]
-        (parse-block (filter #(contains? cmds %) s) 0)]
-    ;; ensure entire string was parsed
-    (when-not (seq rs)
-      blocks)))
+   })
 
 (defn run-block?
   "Determine if a block should be run or re-run"
@@ -101,8 +66,8 @@
        (interpret b in))))
 
 
-;;(interpret (parse-chars hw))
-;;(interpret (parse-chars rot13) "foobar")
+;;(interpret (parse hw))
+;;(interpret (parse rot13) "foobar")
 
 ;; Some example brainfuck programs from wikipedia
 (def hw "++++++++++[>+++++++>++++++++++>+++>+<<<<-]>++.>+.+++++++..+++.>++.<<+++++++++++++++.>.+++.------.--------.>+.>.")
@@ -137,7 +102,7 @@
 ]                            End character reading loop")
 
 ;; (use 'criterium.core)
-;; depanneur.core> (bench (interpret (parse-chars rot13) "foobaasdfasdfr" nil))
+;; depanneur.core> (bench (interpret (parse rot13) "foobaasdfasdfr" nil))
 ;; Evaluation count : 1620 in 60 samples of 27 calls.
 ;;              Execution time mean : 38.808896 ms
 ;;     Execution time std-deviation : 403.324636 us

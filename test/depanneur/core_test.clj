@@ -1,30 +1,15 @@
 (ns depanneur.core-test
-  (:use clojure.test
-        depanneur.core)
+  (:use clojure.test)
+  (:require depanneur)
   (:import [java.io StringReader StringWriter]))
-
-(deftest parse
-  (are [in out] (= (parse-chars in) out)
-       "" []
-       "notbf" []
-       "<>+-,." [\< \> \+ \- \, \.]
-       "mix<in>+  - other ,char2s.  " [\< \> \+ \- \, \.]
-       "[]" [[]]
-       "[[]]" [[[]]]
-       "<<[..,[+]]" [\< \< [\. \. \, [\+]]]))
-
-(deftest badparse
-  (is (thrown? IllegalArgumentException (parse-chars "[")))
-  (is (thrown? IllegalArgumentException (parse-chars "]")))
-  (is (thrown? IllegalArgumentException (parse-chars "[[[]")))
-  (is (thrown? IllegalArgumentException (parse-chars "[]]]"))))
 
 (defn run
   ([prog]
      (run prog ""))
   ([prog in]
      (let [out (StringWriter.)
-           s (interpret (parse-chars prog) (StringReader. (or in "")) out)]
+           s (depanneur/interpret (depanneur/parse prog)
+                                  (StringReader. (or in "")) out)]
        [(.toString out) s])))
 
 (defn st [ptr & data]
